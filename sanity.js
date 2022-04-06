@@ -1,8 +1,9 @@
 import {
   createPreviewSubscriptionHook,
   createCurrentUserHook,
+  createImageUrlBuilder,
+  createClient
 } from 'next-sanity'
-import createImageUrlBuilder from '@sanity/image-url'
 import { config } from './config'
 
 /**
@@ -16,3 +17,6 @@ export const usePreviewSubscription = createPreviewSubscriptionHook(config)
 
 // Helper function for using the current logged in user account
 export const useCurrentUser = createCurrentUserHook(config)
+
+
+export const sanityClient = createClient(config)
