@@ -3,15 +3,36 @@ import Header from '../../components/Header'
 import { Post } from './../../typings'
 import { GetStaticProps, GetStaticPaths } from 'next'
 import PortableText from 'react-portable-text'
+import Head from 'next/head'
+import { useForm, SubmitHandler } from 'react-hook-form'
+
+interface FormInput {
+  _id: string
+  name: string
+  email: string
+  comment: string
+}
 
 interface Props {
   post: Post
 }
 
 export default function PostPage({ post }: Props) {
-  console.log(post)
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+  } = useForm<FormInput>()
+
+  const onSubmit: SubmitHandler<FormInput> = (data) => {
+    console.log(data)
+  }
+
   return (
-    <main className='mb-12'>
+    <main className="mb-12">
+      <Head>
+        <title>{post.title}</title>
+      </Head>
       <Header />
       <img
         src={urlFor(post.mainImage).url()}
@@ -39,7 +60,7 @@ export default function PostPage({ post }: Props) {
           </p>
         </div>
 
-        <div className='mt-10'>
+        <div className="mt-10">
           <PortableText
             content={post.body}
             dataset={process.env.NEXT_PUBLIC_SANITY_DATASET}
@@ -48,30 +69,64 @@ export default function PostPage({ post }: Props) {
         </div>
       </article>
 
-      <hr  className='max-w-xl mx-auto border mt-10 border-yellow-400'/>
+      <hr className="mx-auto mt-10 max-w-xl border border-yellow-400" />
 
-      <form className='max-w-3xl mx-auto mt-12 flex flex-col p-5'>
-          <h3 className='font-bold text-yellow-500'>Enjoyed the article?</h3>
-          <h2 className='text-2xl font-bold'>Leave a comment below!</h2>
-          <hr className='my-4' />
+      <form
+        onSubmit={handleSubmit(onSubmit)}
+        className="mx-auto mt-12 flex max-w-3xl flex-col p-5"
+      >
+        <h3 className="font-bold text-yellow-500">Enjoyed the article?</h3>
+        <h2 className="text-2xl font-bold">Leave a comment below!</h2>
+        <hr className="my-4" />
 
+        <input type="hidden" {...register('_id')} value={post._id} />
+        <label className="my-2">
+          <span className="font-bold text-gray-600">Name</span>
+          <input
+            {...register('name', { required: true })}
+            type="text"
+            className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+          />
+        </label>
 
-          <label className='my-2'>
-              <span className='font-bold text-gray-600'>Name</span>
-              <input type="text" className='block shadow border w-full py-2 px-3 rounded outline-none ring-yellow-500 focus:ring font-bold' />
-          </label>
+        <label className="my-2">
+          <span className="font-bold text-gray-600">Email</span>
+          <input
+            {...register('email', { required: true })}
+            type="email"
+            className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+          />
+        </label>
 
-          <label className='my-2'>
-              <span className='font-bold text-gray-600'>Email</span>
-              <input type="email" className='block shadow border w-full py-2 px-3 rounded outline-none ring-yellow-500 focus:ring font-bold' />
-          </label>
+        <label className="my-2">
+          <span className="font-bold text-gray-600">Comment</span>
+          <textarea
+            {...register('comment', { required: true })}
+            rows={8}
+            className="block w-full resize-none rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+          />
+        </label>
 
-          <label className='my-2'>
-              <span className='font-bold text-gray-600'>Comment</span>
-              <textarea rows={8}  className='resize-none block shadow border w-full py-2 px-3 rounded outline-none ring-yellow-500 focus:ring font-bold'/>
-          </label>
+        <button
+          type="submit"
+          className="mt-4 w-full bg-yellow-500 py-2 text-white hover:bg-yellow-400"
+        >
+          submit
+        </button>
 
-          <button type="submit" className='w-full bg-yellow-500 text-white py-2 hover:bg-yellow-400 mt-4'>submit</button>
+        <div className="mt-5">
+          {errors.name && (
+            <p className="font-bold text-red-500">Name is required *</p>
+          )}
+          {errors.email && (
+            <p className="font-bold text-red-500">
+              A valid email is required *
+            </p>
+          )}
+          {errors.comment && (
+            <p className="font-bold text-red-500">Comment cannot be empty *</p>
+          )}
+        </div>
       </form>
     </main>
   )
