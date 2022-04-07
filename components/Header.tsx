@@ -3,10 +3,12 @@ import Link from 'next/link'
 
 export default function Header() {
   return (
-    <header className="flex items-center justify-between p-5 max-w-7xl mx-auto">
+    <header className="mx-auto flex max-w-7xl items-center justify-between p-5">
       <div className="flex items-center space-x-5">
         <Link href="/">
-          <Logo />
+          <a>
+            <Logo />
+          </a>
         </Link>
         <div className="hidden items-center space-x-5 md:inline-flex">
           <h3>About</h3>
