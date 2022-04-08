@@ -5,6 +5,7 @@ import { GetStaticProps, GetStaticPaths } from 'next'
 import PortableText from 'react-portable-text'
 import Head from 'next/head'
 import { useForm, SubmitHandler } from 'react-hook-form'
+import { useState } from 'react'
 
 interface FormInput {
   _id: string
@@ -18,6 +19,8 @@ interface Props {
 }
 
 export default function PostPage({ post }: Props) {
+  console.log(post.comments)
+  const [submitted, setSubmitted] = useState<Boolean>(false)
   const {
     register,
     handleSubmit,
@@ -25,7 +28,13 @@ export default function PostPage({ post }: Props) {
   } = useForm<FormInput>()
 
   const onSubmit: SubmitHandler<FormInput> = (data) => {
-    console.log(data)
+    fetch('/api/createComment', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+      .then((res) => res.json())
+      .then(() => setSubmitted(true))
+      .catch(() => setSubmitted(false))
   }
 
   return (
@@ -39,7 +48,6 @@ export default function PostPage({ post }: Props) {
         alt={post.title}
         className="h-40 w-full object-cover md:h-80"
       />
-
       <article className="mx-auto max-w-3xl px-5 md:p-0 ">
         <h1 className="mt-10 mb-3 text-3xl">{post.title}</h1>
         <h2 className="mb-2 text-xl font-light text-gray-500">
@@ -68,66 +76,89 @@ export default function PostPage({ post }: Props) {
           />
         </div>
       </article>
-
       <hr className="mx-auto mt-10 max-w-xl border border-yellow-400" />
-
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="mx-auto mt-12 flex max-w-3xl flex-col p-5"
-      >
-        <h3 className="font-bold text-yellow-500">Enjoyed the article?</h3>
-        <h2 className="text-2xl font-bold">Leave a comment below!</h2>
-        <hr className="my-4" />
-
-        <input type="hidden" {...register('_id')} value={post._id} />
-        <label className="my-2">
-          <span className="font-bold text-gray-600">Name</span>
-          <input
-            {...register('name', { required: true })}
-            type="text"
-            className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
-          />
-        </label>
-
-        <label className="my-2">
-          <span className="font-bold text-gray-600">Email</span>
-          <input
-            {...register('email', { required: true })}
-            type="email"
-            className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
-          />
-        </label>
-
-        <label className="my-2">
-          <span className="font-bold text-gray-600">Comment</span>
-          <textarea
-            {...register('comment', { required: true })}
-            rows={8}
-            className="block w-full resize-none rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
-          />
-        </label>
-
-        <button
-          type="submit"
-          className="mt-4 w-full bg-yellow-500 py-2 text-white hover:bg-yellow-400"
-        >
-          submit
-        </button>
-
-        <div className="mt-5">
-          {errors.name && (
-            <p className="font-bold text-red-500">Name is required *</p>
-          )}
-          {errors.email && (
-            <p className="font-bold text-red-500">
-              A valid email is required *
-            </p>
-          )}
-          {errors.comment && (
-            <p className="font-bold text-red-500">Comment cannot be empty *</p>
-          )}
+      {submitted ? (
+        <div className="mx-auto mt-5 max-w-2xl bg-yellow-500 py-10 px-5 text-center font-bold text-white">
+          <h3 className="text-3xl font-bold">
+            Thanks for submitting your comment!
+          </h3>
+          <p className="text-sm font-bold">
+            It will appear once it's submitted.
+          </p>
         </div>
-      </form>
+      ) : (
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="mx-auto mt-12 flex max-w-3xl flex-col p-5"
+        >
+          <h3 className="font-bold text-yellow-500">Enjoyed the article?</h3>
+          <h2 className="text-2xl font-bold">Leave a comment below!</h2>
+          <hr className="my-4" />
+
+          <input type="hidden" {...register('_id')} value={post._id} />
+          <label className="my-2">
+            <span className="font-bold text-gray-600">Name</span>
+            <input
+              {...register('name', { required: true })}
+              type="text"
+              className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+            />
+          </label>
+
+          <label className="my-2">
+            <span className="font-bold text-gray-600">Email</span>
+            <input
+              {...register('email', { required: true })}
+              type="email"
+              className="block w-full rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+            />
+          </label>
+
+          <label className="my-2">
+            <span className="font-bold text-gray-600">Comment</span>
+            <textarea
+              {...register('comment', { required: true })}
+              rows={8}
+              className="block w-full resize-none rounded border py-2 px-3 font-bold shadow outline-none ring-yellow-500 focus:ring"
+            />
+          </label>
+
+          <button
+            type="submit"
+            className="mt-4 w-full bg-yellow-500 py-2 text-white hover:bg-yellow-400"
+          >
+            submit
+          </button>
+
+          <div className="mt-5">
+            {errors.name && (
+              <p className="font-bold text-red-500">Name is required *</p>
+            )}
+            {errors.email && (
+              <p className="font-bold text-red-500">
+                A valid email is required *
+              </p>
+            )}
+            {errors.comment && (
+              <p className="font-bold text-red-500">
+                Comment cannot be empty *
+              </p>
+            )}
+          </div>
+        </form>
+      )}
+
+      <div className='max-w-3xl mx-auto py-10 px-5 shadow'>
+        <h3 className='text-4xl'>Comments</h3>
+        <hr className='mb-5' />
+        {post.comments.map((item) => (
+          <div key={item._id} className='my-2'>
+            <p>
+              <span className='text-yellow-500'>{item.name}</span>: {item.comment}
+            </p>
+          </div>
+        ))}
+      </div>
     </main>
   )
 }
