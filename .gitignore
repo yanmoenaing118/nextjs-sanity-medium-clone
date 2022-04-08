@@ -5,6 +5,7 @@
 /.pnp
 .pnp.js
 
+
 # testing
 /coverage
 
@@ -12,7 +13,8 @@
 /.next/
 /out/
 
-/mediumblog
+mediumblog/node_modules
+
 
 # production
 /build
